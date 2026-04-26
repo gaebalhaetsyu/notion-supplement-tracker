@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>💊 영양제 챙겨먹자</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #0a4d9a;
+      --primary-dark: #083d7a;
+      --primary-light: #e3edf8;
+      --success: #22c55e;
+      --success-light: #f0fdf4;
+      --error: #ef4444;
+      --error-light: #fef2f2;
+      --warn-light: #fffbeb;
+      --text: #1a1a2e;
+      --text-sub: #6b7280;
+      --border: #e5e7eb;
+      --bg: #f8f9ff;
+      --card: #ffffff;
+      --radius: 12px;
+      --shadow: 0 2px 12px rgba(79,110,247,.08);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      color: var(--text);
+      padding: 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .header h1 { font-size: 22px; font-weight: 700; }
+    .header p  { font-size: 13px; color: var(--text-sub); margin-top: 4px; }
+
+    /* ── 탭 ── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--border);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-sub);
+      transition: all .2s;
+    }
+    .tab-btn.active {
+      background: var(--card);
+      color: var(--primary);
+      box-shadow: var(--shadow);
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── 카드 ── */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── 폼 요소 ── */
+    .form-row { margin-bottom: 14px; }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    input[type="text"], input[type="number"], select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--card);
+      transition: border-color .2s;
+      outline: none;
+    }
+    input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: var(--primary); }
+    input[type="number"] { width: 100px; }
+
+    /* ── 요일 선택 ── */
+    .days-grid {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .day-btn {
+      width: 38px;
+      height: 38px;
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      background: var(--card);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      color: var(--text);
+    }
+    .day-btn.selected {
+      background: #4b5563;
+      border-color: #4b5563;
+      color: #fff;
+    }
+    .day-btn.saturday { color: #0a4d9a; }
+    .day-btn.saturday.selected { background: #0a4d9a; border-color: #0a4d9a; color: #fff; }
+    .day-btn.sunday { color: #ef4444; }
+    .day-btn.sunday.selected { background: #ef4444; border-color: #ef4444; color: #fff; }
+
+    /* ── 버튼 ── */
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+    .btn-primary:disabled { background: #c7d0f8; cursor: not-allowed; }
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--border);
+      color: var(--text-sub);
+    }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+
+    .btn-sm {
+      width: auto;
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+    .btn-danger { background: var(--error-light); color: var(--error); border: none; }
+    .btn-edit   { background: var(--primary-light); color: var(--primary); border: none; }
+
+    /* ── 복용 시간 토글 ── */
+    .time-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .time-toggle-btn {
+      padding: 7px 13px;
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      background: var(--card);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      color: var(--text-sub);
+    }
+    .time-toggle-btn.selected {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .time-custom-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .time-custom-row input {
+      flex: 1;
+      width: auto;
+    }
+    .btn-add-time {
+      padding: 7px 14px;
+      border: 1.5px solid var(--primary);
+      border-radius: 8px;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .15s;
+    }
+    .btn-add-time:hover { background: var(--primary); color: #fff; }
+
+    /* ── 영양제 목록 ── */
+    .supp-list { display: flex; flex-direction: column; gap: 10px; }
+    .supp-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: var(--bg);
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      gap: 8px;
+    }
+    .supp-info { flex: 1; min-width: 0; }
+    .supp-name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .supp-meta { font-size: 12px; color: var(--text-sub); margin-top: 3px; }
+    .supp-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    .time-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #f3f4f6;
+      color: #374151;
+    }
+    .time-아침-식전 { background: #fef9c3; color: #854d0e; }
+    .time-아침-식후 { background: #fef08a; color: #713f12; }
+    .time-점심-식전 { background: #dcfce7; color: #166534; }
+    .time-점심-식후 { background: #bbf7d0; color: #14532d; }
+    .time-저녁-식전 { background: #e0e7ff; color: #3730a3; }
+    .time-저녁-식후 { background: #c7d2fe; color: #312e81; }
+    .time-자기-전   { background: #fce7f3; color: #9d174d; }
+
+    .empty-state {
+      text-align: center;
+      padding: 30px;
+      color: var(--text-sub);
+      font-size: 13px;
+    }
+
+    /* ── 주간 일정 탭 ── */
+    .week-preview {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .day-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      background: var(--bg);
+      border-radius: 8px;
+    }
+    .day-label {
+      width: 30px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-sub);
+      padding-top: 2px;
+      flex-shrink: 0;
+    }
+    .day-date { font-size: 11px; color: var(--text-sub); }
+    .day-supplements { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
+    .supp-pill {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 500;
+    }
+    .no-supp { font-size: 12px; color: var(--border); }
+
+    /* ── 결과 ── */
+    .result-box {
+      padding: 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-top: 12px;
+      display: none;
+    }
+    .result-box.success { background: var(--success-light); color: #166534; border: 1px solid #bbf7d0; display: block; }
+    .result-box.error   { background: var(--error-light);   color: #991b1b; border: 1px solid #fecaca; display: block; }
+    .result-box .result-count { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .btn-undo {
+      margin-top: 12px;
+      padding: 8px 16px;
+      border: 1.5px solid #16a34a;
+      border-radius: 8px;
+      background: transparent;
+      color: #16a34a;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .btn-undo:hover { background: #16a34a; color: #fff; }
+
+    /* ── 알림 토스트 ── */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #1a1a2e;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      z-index: 9999;
+      transition: transform .3s ease;
+      white-space: nowrap;
+      max-width: 90vw;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── 날짜 입력 ── */
+    .date-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .date-row input[type="date"] {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
+    .date-row input[type="date"]:focus { border-color: var(--primary); }
+
+    /* ── 모달 (편집) ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      display: none;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 24px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    }
+    .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; }
+    .modal-actions { display: flex; gap: 8px; margin-top: 20px; }
+    .modal-actions .btn { flex: 1; }
+
+    .divider {
+      border: none;
+      border-top: 1.5px solid var(--border);
+      margin: 16px 0;
+    }
+
+    /* ── 풀스크린 ── */
+    .fullscreen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 100;
+    }
+    .fullscreen.hidden { display: none; }
+    .center-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 40px 32px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .center-card h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+    .center-card p  { font-size: 14px; color: var(--text-sub); margin-bottom: 24px; line-height: 1.6; }
+    .notion-btn {
+      width: 100%;
+      padding: 13px;
+      background: #000;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: opacity .2s;
+    }
+    .notion-btn:hover { opacity: .85; }
+    .error-msg { font-size: 13px; color: var(--error); margin-top: 12px; display: none; }
+    .error-msg.show { display: block; }
+
+    /* ── 헤더 유저 정보 ── */
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .header-left h1 { font-size: 22px; font-weight: 700; }
+    .header-left p  { font-size: 13px; color: var(--text-sub); margin-top: 2px; }
+    .user-info { display: flex; align-items: center; gap: 8px; }
+    .workspace-badge {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-sub);
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 10px;
+    }
+    .btn-logout {
+      font-size: 12px;
+      padding: 5px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--text-sub);
+      cursor: pointer;
+    }
+    .btn-logout:hover { border-color: var(--error); color: var(--error); }
+
+    /* ── DB 선택 ── */
+    .db-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; max-height: 240px; overflow-y: auto; }
+    .db-item {
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      text-align: left;
+      background: var(--card);
+      transition: all .15s;
+    }
+    .db-item:hover   { border-color: var(--primary); color: var(--primary); }
+    .db-item.selected { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+  </style>
+</head>
+<body>
+
+<!-- ── 로그인 화면 ── -->
+<div id="loginScreen" class="fullscreen">
+  <div class="center-card">
+    <div style="font-size:48px;margin-bottom:16px">💊</div>
+    <h2>영양제 챙겨먹자</h2>
+    <p>Notion과 연결하여<br>복용 일정을 쉽게 관리하세요</p>
+    <button class="notion-btn" onclick="location.href='/auth/notion'">
+      <img src="/images/notion-logo.png" width="20" height="20" alt="Notion">
+      Notion으로 로그인
+    </button>
+    <div id="loginError" class="error-msg"></div>
+  </div>
+</div>
+
+<!-- ── DB 선택 화면 ── -->
+<div id="dbScreen" class="fullscreen hidden">
+  <div class="center-card">
+    <div style="font-size:40px;margin-bottom:16px">📂</div>
+    <h2>데이터베이스 선택</h2>
+    <p>영양제 복용 일정을 추가할<br>Notion 데이터베이스를 선택하세요</p>
+    <div id="dbList" class="db-list">
+      <div style="text-align:center;color:var(--text-sub);font-size:13px;padding:20px">불러오는 중...</div>
+    </div>
+    <button class="btn btn-primary" id="dbConfirmBtn" onclick="confirmDatabase()" disabled>선택 완료</button>
+    <p style="margin-top:12px;font-size:12px;color:var(--text-sub)">목록에 없으면 Notion에서 해당 DB를 Integration에 공유해주세요</p>
+  </div>
+</div>
+
+<!-- ── 메인 앱 ── -->
+<div id="mainApp" style="display:none">
+
+<div class="header">
+  <div class="header-left">
+    <h1>💊 영양제 챙겨먹자</h1>
+    <p id="workspaceName" style="font-size:13px;color:var(--text-sub);margin-top:2px"></p>
+  </div>
+  <div class="user-info">
+    <span id="workspaceBadge" class="workspace-badge"></span>
+    <button class="btn-logout" onclick="logout()">로그아웃</button>
+  </div>
+</div>
+
+<!-- 탭 -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('setup')">⚙️ 영양제 설정</button>
+  <button class="tab-btn" onclick="switchTab('schedule')">📅 일정 추가</button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     탭 1: 영양제 설정
+══════════════════════════════════════════ -->
+<div id="tab-setup" class="tab-panel active">
+
+  <!-- 추가 폼 -->
+  <div class="card">
+    <div class="card-title">➕ 영양제 추가</div>
+
+    <div class="form-row">
+      <label>영양제 이름</label>
+      <input type="text" id="suppName" placeholder="예: 비타민C, 오메가3, 마그네슘">
+    </div>
+
+    <div class="form-row">
+      <label>1회 복용 개수</label>
+      <input type="number" id="suppQty" value="1" min="1" max="99">
+    </div>
+
+    <div class="form-row">
+      <label>복용 시간 (중복 선택 가능)</label>
+      <div class="time-grid" id="addTimesGrid">
+        <button class="time-toggle-btn" data-time="아침 식전">🌅 아침 식전</button>
+        <button class="time-toggle-btn" data-time="아침 식후">🌅 아침 식후</button>
+        <button class="time-toggle-btn" data-time="점심 식전">☀️ 점심 식전</button>
+        <button class="time-toggle-btn" data-time="점심 식후">☀️ 점심 식후</button>
+        <button class="time-toggle-btn" data-time="저녁 식전">🌙 저녁 식전</button>
+        <button class="time-toggle-btn" data-time="저녁 식후">🌙 저녁 식후</button>
+        <button class="time-toggle-btn" data-time="자기 전">🛌 자기 전</button>
+      </div>
+      <div class="time-custom-row">
+        <input type="text" id="addCustomTime" placeholder="직접 입력 (예: 운동 후)">
+        <button class="btn-add-time" onclick="addCustomTimeBtn('addTimesGrid', 'addCustomTime')">+ 추가</button>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label>복용 요일</label>
+      <div class="days-grid" id="addDaysGrid">
+        <button class="day-btn sunday" data-day="0">일</button>
+        <button class="day-btn" data-day="1">월</button>
+        <button class="day-btn" data-day="2">화</button>
+        <button class="day-btn" data-day="3">수</button>
+        <button class="day-btn" data-day="4">목</button>
+        <button class="day-btn" data-day="5">금</button>
+        <button class="day-btn saturday" data-day="6">토</button>
+        <button class="btn btn-outline btn-sm" onclick="selectAllDays('addDaysGrid')" style="border-radius:8px;height:38px;padding:0 12px">매일</button>
+        <button class="btn btn-outline btn-sm" onclick="selectWeekdays('addDaysGrid')" style="border-radius:8px;height:38px;padding:0 12px">평일</button>
+        <button class="btn btn-outline btn-sm" onclick="selectWeekend('addDaysGrid')" style="border-radius:8px;height:38px;padding:0 12px">주말</button>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" onclick="addSupplement()">추가하기</button>
+  </div>
+
+  <!-- 영양제 목록 -->
+  <div class="card">
+    <div class="card-title">📋 등록된 영양제 <span id="suppCount" style="font-size:13px;color:var(--text-sub);font-weight:500"></span></div>
+    <div id="suppList" class="supp-list">
+      <div class="empty-state">등록된 영양제가 없습니다<br>위에서 영양제를 추가해보세요</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     탭 2: 일정 추가
+══════════════════════════════════════════ -->
+<div id="tab-schedule" class="tab-panel">
+
+  <div class="card">
+    <div class="card-title">📅 일주일 일정 추가</div>
+
+    <div class="form-row">
+      <label>시작 날짜</label>
+      <div class="date-row">
+        <input type="date" id="startDate">
+        <button class="btn btn-outline btn-sm" onclick="setToday()" style="white-space:nowrap">오늘</button>
+      </div>
+    </div>
+
+    <div id="weekPreview" class="week-preview"></div>
+
+    <hr class="divider">
+
+    <button class="btn btn-primary" id="addWeekBtn" onclick="addWeeklySchedule()">
+      📥 노션에 일주일 일정 추가
+    </button>
+
+    <div id="scheduleResult" class="result-box"></div>
+  </div>
+
+  <div class="card" style="font-size:13px;color:var(--text-sub);line-height:1.6">
+    <div class="card-title" style="font-size:13px">ℹ️ 노션 DB 속성 안내</div>
+    <p>영양제 복용 일정 데이터베이스에 아래 속성이 필요합니다:</p>
+    <br>
+    <p>• <strong>종류</strong> — 제목(Title) 타입</p>
+    <p>• <strong>날짜</strong> — 날짜(Date) 타입</p>
+    <p>• <strong>시점</strong> — 다중 선택(Multi-select) 타입</p>
+    <p>• <strong>개수</strong> — 숫자(Number) 타입</p>
+    <p>• <strong>상태</strong> — 체크박스(Checkbox) 타입</p>
+    <br>
+    <button class="btn btn-outline" onclick="checkDbInfo()" style="width:auto;padding:8px 16px;font-size:12px">DB 속성 확인하기</button>
+    <div id="dbInfoResult" style="margin-top:10px;font-size:12px"></div>
+  </div>
+
+</div>
+
+<!-- 편집 모달 -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <div class="modal-title">✏️ 영양제 수정</div>
+
+    <div class="form-row">
+      <label>영양제 이름</label>
+      <input type="text" id="editName">
+    </div>
+    <div class="form-row">
+      <label>1회 복용 개수</label>
+      <input type="number" id="editQty" value="1" min="1" max="99">
+    </div>
+
+    <div class="form-row">
+      <label>복용 시간 (중복 선택 가능)</label>
+      <div class="time-grid" id="editTimesGrid">
+        <button class="time-toggle-btn" data-time="아침 식전">🌅 아침 식전</button>
+        <button class="time-toggle-btn" data-time="아침 식후">🌅 아침 식후</button>
+        <button class="time-toggle-btn" data-time="점심 식전">☀️ 점심 식전</button>
+        <button class="time-toggle-btn" data-time="점심 식후">☀️ 점심 식후</button>
+        <button class="time-toggle-btn" data-time="저녁 식전">🌙 저녁 식전</button>
+        <button class="time-toggle-btn" data-time="저녁 식후">🌙 저녁 식후</button>
+        <button class="time-toggle-btn" data-time="자기 전">🛌 자기 전</button>
+      </div>
+      <div class="time-custom-row">
+        <input type="text" id="editCustomTime" placeholder="직접 입력 (예: 운동 후)">
+        <button class="btn-add-time" onclick="addCustomTimeBtn('editTimesGrid', 'editCustomTime')">+ 추가</button>
+      </div>
+    </div>
+    <div class="form-row">
+      <label>복용 요일</label>
+      <div class="days-grid" id="editDaysGrid">
+        <button class="day-btn sunday" data-day="0">일</button>
+        <button class="day-btn" data-day="1">월</button>
+        <button class="day-btn" data-day="2">화</button>
+        <button class="day-btn" data-day="3">수</button>
+        <button class="day-btn" data-day="4">목</button>
+        <button class="day-btn" data-day="5">금</button>
+        <button class="day-btn saturday" data-day="6">토</button>
+        <button class="btn btn-outline btn-sm" onclick="selectAllDays('editDaysGrid')" style="border-radius:8px;height:38px;padding:0 12px">매일</button>
+        <button class="btn btn-outline btn-sm" onclick="selectWeekdays('editDaysGrid')" style="border-radius:8px;height:38px;padding:0 12px">평일</button>
+        <button class="btn btn-outline btn-sm" onclick="selectWeekend('editDaysGrid')" style="border-radius:8px;height:38px;padding:0 12px">주말</button>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeEditModal()">취소</button>
+      <button class="btn btn-primary" onclick="saveEdit()">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+</div> <!-- /mainApp -->
+
+<script src="/app.js"></script>
+</body>
+</html>

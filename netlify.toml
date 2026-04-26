@@ -1,0 +1,19 @@
+[build]
+  command = "npm install"
+  publish = "public"
+  functions = "netlify/functions"
+
+[dev]
+  command = "node server.js"
+  port = 8888
+  targetPort = 3000
+
+[[redirects]]
+  from = "/auth/*"
+  to = "/.netlify/functions/api"
+  status = 200
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api"
+  status = 200

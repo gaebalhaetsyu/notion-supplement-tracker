@@ -1,0 +1,13 @@
+node_modules/
+.env
+data/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Netlify CLI cache
+.netlify/
