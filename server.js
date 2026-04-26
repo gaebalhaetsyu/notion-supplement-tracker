@@ -28,8 +28,10 @@ const CLIENT_SECRET = process.env.NOTION_OAUTH_CLIENT_SECRET;
 const REDIRECT_URI  = process.env.NOTION_REDIRECT_URI || 'http://localhost:3000/auth/callback';
 const USERS_DIR     = path.join(__dirname, 'data', 'users');
 
-if (!process.env.NETLIFY && !fs.existsSync(USERS_DIR)) {
-  fs.mkdirSync(USERS_DIR, { recursive: true });
+if (!process.env.NETLIFY) {
+  try {
+    if (!fs.existsSync(USERS_DIR)) fs.mkdirSync(USERS_DIR, { recursive: true });
+  } catch (_) {}
 }
 
 // ─── 유저 데이터 ─────────────────────────────────────────────────────────────
